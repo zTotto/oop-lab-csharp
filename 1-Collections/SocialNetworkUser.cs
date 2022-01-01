@@ -6,27 +6,55 @@ namespace Collections
     public class SocialNetworkUser<TUser> : User, ISocialNetworkUser<TUser>
         where TUser : IUser
     {
+        private readonly Dictionary<string, ISet<TUser>> _followedUsers = new Dictionary<string, ISet<TUser>>();
         public SocialNetworkUser(string fullName, string username, uint? age) : base(fullName, username, age)
         {
-            throw new NotImplementedException("TODO is there anything to do here?");
         }
 
         public bool AddFollowedUser(string group, TUser user)
         {
-            throw new NotImplementedException("TODO add user to the provided group. Return false if the user was already in the group");
+            if (_followedUsers.ContainsKey(group))
+            {
+                if (_followedUsers[group].Contains(user)) {
+                    return false;
+                } else
+                {
+                    _followedUsers[group].Add(user);
+                    return true;
+                }
+            }
+            else
+            {
+                var users = new HashSet<TUser>();
+                users.Add(user);
+                _followedUsers[group] = users;
+                return true;
+            }
         }
 
         public IList<TUser> FollowedUsers
         {
             get
             {
-                throw new NotImplementedException("TODO construct and return the list of all users followed by the current users, in all groups");
+                IList<TUser> followedUsers = new List<TUser>();
+                foreach (var group in _followedUsers.Keys)
+                {
+                    foreach (var user in _followedUsers[group])
+                    {
+                        followedUsers.Add(user);
+                    }
+                }
+                return followedUsers;
             }
         }
 
         public ICollection<TUser> GetFollowedUsersInGroup(string group)
         {
-            throw new NotImplementedException("TODO construct and return a collection containing of all users followed by the current users, in group");
+            if (group != null && _followedUsers.ContainsKey(group))
+            {
+                return new HashSet<TUser>(_followedUsers[group]);
+            }
+            else return new HashSet<TUser>();
         }
     }
 }
