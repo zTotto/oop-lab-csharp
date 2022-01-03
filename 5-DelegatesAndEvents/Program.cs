@@ -26,8 +26,11 @@ namespace DelegatesAndEvents
                     c1 = false;
                 }
             };
+            Console.WriteLine(c1);
 
             list.Add(4);
+            Console.WriteLine(c1);
+            Console.WriteLine(list.ToString());
 
             list.ElementRemoved += (lst, value, index) =>
             {
@@ -40,8 +43,11 @@ namespace DelegatesAndEvents
                     c2 = false;
                 }
             };
+            Console.WriteLine(c2);
 
             list.Remove(2);
+            Console.WriteLine(c2);
+            Console.WriteLine(list.ToString());
 
             list.ElementChanged += (lst, value, oldValue, index) =>
             {
@@ -54,8 +60,11 @@ namespace DelegatesAndEvents
                     c3 = false;
                 }
             };
+            Console.WriteLine(c3);
 
             list[0] = 6;
+            Console.WriteLine(c3);
+            Console.WriteLine(list.ToString());
 
             if (!(c1 && c2 && c3))
             {

@@ -7,6 +7,7 @@ namespace DelegatesAndEvents
     /// <inheritdoc cref="IObservableList{T}" />
     public class ObservableList<TItem> : IObservableList<TItem>
     {
+        private readonly IList<TItem> _items = new List<TItem>();
         /// <inheritdoc cref="IObservableList{T}.ElementInserted" />
         public event ListChangeCallback<TItem> ElementInserted;
 
@@ -17,109 +18,108 @@ namespace DelegatesAndEvents
         public event ListElementChangeCallback<TItem> ElementChanged;
 
         /// <inheritdoc cref="ICollection{T}.Count" />
-        public int Count
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public int Count => _items.Count;
 
         /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
-        public bool IsReadOnly
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public bool IsReadOnly => _items.IsReadOnly;
 
         /// <inheritdoc cref="IList{T}.this" />
         public TItem this[int index]
         {
-            get { throw new System.NotImplementedException(); }
-            set { throw new System.NotImplementedException(); }
+            get => _items[index];
+            set
+            {
+                TItem temp = _items[index];
+                _items[index] = value;
+                ElementChanged?.Invoke(this, value, temp, index);
+            }
         }
 
         /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
-        public IEnumerator<TItem> GetEnumerator()
-        {
-            throw new System.NotImplementedException();
-        }
+        public IEnumerator<TItem> GetEnumerator() => _items.GetEnumerator();
 
         /// <inheritdoc cref="IEnumerable.GetEnumerator" />
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
         /// <inheritdoc cref="ICollection{T}.Add" />
         public void Add(TItem item)
         {
-            throw new System.NotImplementedException();
+            _items.Add(item);
+            ElementInserted?.Invoke(this, item, _items.Count-1);
         }
 
         /// <inheritdoc cref="ICollection{T}.Clear" />
         public void Clear()
         {
-            throw new System.NotImplementedException();
+            List<TItem> temp = new List<TItem>(_items);
+            _items.Clear();
+            int count = 0;
+            foreach (var item in temp)
+            {
+                ElementRemoved?.Invoke(this, item, count++);
+            }
         }
 
         /// <inheritdoc cref="ICollection{T}.Contains" />
-        public bool Contains(TItem item)
-        {
-            throw new System.NotImplementedException();
-        }
+        public bool Contains(TItem item) => _items.Contains(item);
 
         /// <inheritdoc cref="ICollection{T}.CopyTo" />
         public void CopyTo(TItem[] array, int arrayIndex)
         {
-            throw new System.NotImplementedException();
+            for (int i = arrayIndex; i < _items.Count; i++)
+            {
+                array[i] = _items[i];
+            }
         }
 
         /// <inheritdoc cref="ICollection{T}.Remove" />
         public bool Remove(TItem item)
         {
-            throw new System.NotImplementedException();
+            if (_items.Contains(item))
+            {
+                int ind = _items.IndexOf(item);
+                bool res = _items.Remove(item);
+                if (res)
+                {
+                    ElementRemoved?.Invoke(this, item, ind);
+                }
+                return res;
+            }
+            return false;
         }
 
         /// <inheritdoc cref="IList{T}.IndexOf" />
-        public int IndexOf(TItem item)
-        {
-            throw new System.NotImplementedException();
-        }
+        public int IndexOf(TItem item) => _items.IndexOf(item);
 
         /// <inheritdoc cref="IList{T}.RemoveAt" />
         public void Insert(int index, TItem item)
         {
-            throw new System.NotImplementedException();
+            _items.Insert(index, item);
+            ElementInserted?.Invoke(this, item, index);
         }
 
         /// <inheritdoc cref="IList{T}.RemoveAt" />
         public void RemoveAt(int index)
         {
-            throw new System.NotImplementedException();
+            TItem temp = _items[index];
+            _items.RemoveAt(index);
+            ElementRemoved?.Invoke(this, temp, index);
         }
 
         /// <inheritdoc cref="object.Equals(object?)" />
         public override bool Equals(object obj)
         {
-            // TODO improve
-            return base.Equals(obj);
+            if (obj is ObservableList<TItem> objList)
+            {
+                return this.Equals(objList);
+            }
+            return false;
         }
 
         /// <inheritdoc cref="object.GetHashCode" />
-        public override int GetHashCode()
-        {
-            // TODO improve
-            return base.GetHashCode();
-        }
+        public override int GetHashCode() => this._items.GetHashCode();
 
         /// <inheritdoc cref="object.ToString" />
-        public override string ToString()
-        {
-            // TODO improve
-            return base.ToString();
-        }
+        public override string ToString() => Environment.NewLine + string.Join(Environment.NewLine, this._items) + Environment.NewLine;
     }
 }
